@@ -7,7 +7,7 @@ def home(request):
     context = {'categories': Category.objects.all()}
     if request.GET.get('category'):
         return redirect(f"/quiz/?category={request.GET.get('category')}")
-    return render(request, 'home.html', context)
+    return render(request, 'index.html', context)
 
 def quiz_page(request):
     context = {'category': request.GET.get('category')}
