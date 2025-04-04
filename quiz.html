@@ -1,0 +1,153 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz APP</title>
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <style>
+        body {
+            background: url("{% static 'admin/img/AdobeStock-294794307.svg' %}") no-repeat center center fixed;
+            background-size: cover;
+            margin: 0;
+            padding: 0;
+            font-family: 'Arial', sans-serif;
+        }
+        .quiz-container {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 8px;
+            padding: 2rem;
+            margin-top: 2rem;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+        }
+        .question-card {
+            margin-bottom: 1.5rem;
+        }
+        .question-title {
+            font-size: 1.2rem;
+            font-weight: bold;
+        }
+        .feedback {
+            font-size: 1rem;
+            color: #007bff;
+            margin-bottom: 1rem;
+            text-align: center;
+        }
+        .submit-btn {
+            width: 100%;
+            padding: 0.75rem;
+            font-size: 1.1rem;
+        }
+    </style>
+</head>
+<body>
+    <div id="app" class="container">
+        <div class="col-md-8 col-lg-6 mx-auto quiz-container">
+            <h3 class="text-center mb-4">Quiz is ON</h3>
+            
+            <!-- Render each question -->
+            <div v-for="(question, index) in questions" :key="index" class="card question-card">
+                <div class="card-body">
+                    <p class="question-title">[[ question.question ]]</p>
+                    <div class="form-check" v-for="(answer, aIndex) in question.answers" :key="aIndex">
+                        <input class="form-check-input" 
+                               type="radio" 
+                               :name="'question_' + index"
+                               :id="'q' + index + 'a' + aIndex"
+                               :value="answer.answer"
+                               v-model="userAnswers[index]"
+                               @click="handleClick(question, answer)">
+                        <label class="form-check-label" :for="'q' + index + 'a' + aIndex">
+                          [[ answer.answer ]]
+                        </label>
+                    </div>
+                </div>
+            </div>
+            <!-- Submit button to check final score -->
+            <button @click="submitQuiz" class="btn btn-primary submit-btn">Submit Quiz</button>
+            <p v-if="result" class="text-center mt-3 font-weight-bold">Final Score: [[ result ]]</p>
+        </div>
+    </div>
+    
+    <!-- Vue and Bootstrap JS -->
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        const { createApp, ref, onMounted } = Vue
+
+        createApp({
+            delimiters: ['[[', ']]'],
+            setup() {
+                const category = ref('{{ category }}');
+                const questions = ref([]);
+                const userAnswers = ref([]);
+                const feedback = ref('');
+                const result = ref('');
+
+                // Fetch questions from backend
+                const getQuestions = async () => {
+                    try {
+                        const response = await fetch('/api/get-quiz/?category=' + category.value);
+                        const res = await response.json();
+                        console.log(res);
+                        if (res.status) {
+                            questions.value = res.data;
+                            userAnswers.value = new Array(res.data.length).fill(null);
+                        } else {
+                            console.error("API responded with error:", res.error);
+                        }
+                    } catch (error) {
+                        console.error("Error fetching questions:", error);
+                    }
+                };
+
+                // Check if the clicked answer is correct
+                const checkAnswer = (question, clickedAnswer) => {
+                    console.log("Checking answer for question UID:", question.uid);
+                    let correctAnswer = null;
+                    for (let ans of question.answers) {
+                        if (ans.is_correct) {
+                            correctAnswer = ans;
+                            break;
+                        }
+                    }
+                    if (correctAnswer) {
+                        if (clickedAnswer.answer === correctAnswer.answer) {
+                            feedback.value = "Correct answer for question " + question.uid;
+                        } else {
+                            feedback.value = "Incorrect answer for question " + question.uid;
+                        }
+                    } else {
+                        feedback.value = "No correct answer flagged for question " + question.uid;
+                    }
+                };
+
+                const handleClick = (question, answer) => {
+                    console.log("Clicked answer:", answer, "for question:", question);
+                    checkAnswer(question, answer);
+                };
+
+                // Calculate and display the final score
+                const submitQuiz = () => {
+                    let score = 0;
+                    questions.value.forEach((question, index) => {
+                        let correctAnswer = question.answers.find(ans => ans.is_correct);
+                        if (correctAnswer && userAnswers.value[index] === correctAnswer.answer) {
+                            score++;
+                        }
+                    });
+                    result.value = score + " out of " + questions.value.length;
+                    console.log("Final Score:", result.value);
+                };
+
+                onMounted(getQuestions);
+
+                return { category, questions, userAnswers, feedback, submitQuiz, result, handleClick };
+            }
+        }).mount('#app')
+    </script>
+</body>
+</html>
