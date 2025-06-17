@@ -1,0 +1,86 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Quiz Result</title>
+  <!-- Bootstrap CSS -->
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+  <style>
+    body {
+      background: url("{% static 'admin/img/AdobeStock-294794307.svg' %}") no-repeat center center fixed;
+      background-size: cover;
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+    }
+    .result-container {
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    .result-box {
+      background: rgba(255, 255, 255, 0.95);
+      padding: 2rem;
+      border-radius: 8px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+      text-align: center;
+      opacity: 0;
+      transform: scale(0.5);
+      animation: fadeInScale 1s forwards;
+    }
+    @keyframes fadeInScale {
+      0% {
+        opacity: 0;
+        transform: scale(0.5);
+      }
+      100% {
+        opacity: 1;
+        transform: scale(1);
+      }
+    }
+    .result-title {
+      font-size: 2rem;
+      margin-bottom: 1rem;
+      font-weight: bold;
+    }
+    .result-text {
+      font-size: 1.5rem;
+      color: #28a745;
+    }
+  </style>
+</head>
+<body>
+  <div id="result-app" class="result-container">
+    <div class="result-box">
+      <h1 class="result-title">Final Score</h1>
+      <p class="result-text">[[ result ]]</p>
+      <button class="btn btn-primary mt-4" @click="goHome">Go Home</button>
+    </div>
+  </div>
+  
+  <!-- Vue JS -->
+  <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+  <script>
+    const { createApp, ref } = Vue;
+    createApp({
+      delimiters: ['[[', ']]'],
+      setup() {
+        // Retrieve the final score result.
+        // This example assumes the result was stored in localStorage by the quiz page.
+        // Adjust this logic based on how you want to pass the result.
+        const result = ref(localStorage.getItem('quizResult') || "0 out of 0");
+
+        // Navigate back to the home page.
+        const goHome = () => {
+          window.location.href = "/";
+        };
+
+        return { result, goHome };
+      }
+    }).mount('#result-app');
+  </script>
+</body>
+</html>

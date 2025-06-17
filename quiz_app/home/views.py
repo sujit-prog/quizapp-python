@@ -36,5 +36,10 @@ def get_quiz_api(request):
         payload = {'status': False, 'error': str(e)}
         return JsonResponse(payload)
 
+def result(request):
+    # Simply render the result.html template.
+    # The result is retrieved on the client side (e.g., from localStorage).
+    return render(request, 'result.html')
+
 
 

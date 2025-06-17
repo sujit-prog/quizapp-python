@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Quiz APP</title>
+    <title>VSSUT SAP</title>
     <!-- Bootstrap CSS -->
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <style>
@@ -65,9 +65,8 @@
                     </div>
                 </div>
             </div>
-            <!-- Submit button to check final score -->
+            <!-- Submit button to check final score and redirect -->
             <button @click="submitQuiz" class="btn btn-primary submit-btn">Submit Quiz</button>
-            <p v-if="result" class="text-center mt-3 font-weight-bold">Final Score: [[ result ]]</p>
         </div>
     </div>
     
@@ -130,7 +129,7 @@
                     checkAnswer(question, answer);
                 };
 
-                // Calculate and display the final score
+                // Calculate final score, store it, and redirect to result.html
                 const submitQuiz = () => {
                     let score = 0;
                     questions.value.forEach((question, index) => {
@@ -141,6 +140,10 @@
                     });
                     result.value = score + " out of " + questions.value.length;
                     console.log("Final Score:", result.value);
+                    // Store result in localStorage so that result.html can display it
+                    localStorage.setItem("quizResult", result.value);
+                    // Redirect to the result page
+                    window.location.href = "/result/";
                 };
 
                 onMounted(getQuestions);
